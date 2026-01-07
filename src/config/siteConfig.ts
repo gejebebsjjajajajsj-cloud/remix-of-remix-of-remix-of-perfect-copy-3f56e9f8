@@ -7,6 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const SITE_CONFIG_STORAGE_KEY = "site_admin_config_v1";
 
+// Define qual site está sendo usado - "production" para Vercel, "development" para ambiente local
+export const SITE_ID = import.meta.env.VITE_SITE_ID || "development";
+
 export type SiteConfig = {
   pageBackgroundColor: string;
   heroBannerUrl: string;
@@ -57,11 +60,12 @@ const LOCAL_ONLY_FIELDS: (keyof SiteConfig)[] = [
 ];
 
 // Carrega configurações do banco de dados
-export const loadSiteConfigFromDB = async (): Promise<SiteConfig> => {
+export const loadSiteConfigFromDB = async (siteId: string = SITE_ID): Promise<SiteConfig> => {
   try {
     const { data, error } = await supabase
       .from("site_config")
-      .select("config_key, config_value");
+      .select("config_key, config_value")
+      .eq("site_id", siteId);
 
     if (error) {
       console.error("Erro ao carregar configurações do banco:", error);
@@ -85,7 +89,7 @@ export const loadSiteConfigFromDB = async (): Promise<SiteConfig> => {
 };
 
 // Salva configurações no banco de dados
-export const saveSiteConfigToDB = async (config: SiteConfig): Promise<boolean> => {
+export const saveSiteConfigToDB = async (config: SiteConfig, siteId: string = SITE_ID): Promise<boolean> => {
   try {
     const entries = Object.entries(config).filter(
       ([key, value]) => 
@@ -98,8 +102,8 @@ export const saveSiteConfigToDB = async (config: SiteConfig): Promise<boolean> =
       const { error } = await supabase
         .from("site_config")
         .upsert(
-          { config_key: key, config_value: String(value) },
-          { onConflict: "config_key" }
+          { config_key: key, config_value: String(value), site_id: siteId },
+          { onConflict: "config_key,site_id" }
         );
 
       if (error) {
@@ -120,6 +124,7 @@ export const saveSiteConfigToDB = async (config: SiteConfig): Promise<boolean> =
       await supabase
         .from("site_config")
         .delete()
+        .eq("site_id", siteId)
         .in("config_key", keysToRemove);
     }
 
