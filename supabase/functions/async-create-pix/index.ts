@@ -127,13 +127,20 @@ serve(async (req) => {
     const webhookUrl = getWebhookUrl();
     console.log("Webhook URL:", webhookUrl);
 
-    // Monta o payload
+    // Formata o telefone (obrigatório com 10-11 dígitos)
+    const cleanPhone = phone?.replace(/\D/g, "") || "11999999999";
+
+    // Monta o payload conforme documentação da API
     const pixPayload = {
       amount: amountInReais,
-      client_name: name,
-      client_email: email,
-      client_document: cleanCpf,
+      description: type === "subscription" ? "Assinatura" : "Pagamento",
       webhook_url: webhookUrl,
+      client: {
+        name: name,
+        cpf: cleanCpf,
+        email: email,
+        phone: cleanPhone,
+      },
     };
 
     console.log("PIX Payload:", JSON.stringify(pixPayload));
