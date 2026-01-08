@@ -150,7 +150,7 @@ const Index = () => {
       setIsLoadingPix(true);
       setPixModalOpen(true);
 
-      const amount = product === "whatsapp" ? 15000 : 2990;
+      const amount = product === "whatsapp" ? 10000 : 2990;
 
       const { data, error } = await supabase.functions.invoke("async-create-pix", {
         body: {
