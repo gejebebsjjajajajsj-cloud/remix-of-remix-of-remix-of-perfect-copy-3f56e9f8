@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.svg";
 import logoMobile from "@/assets/logo_mobile.svg";
 import chatIcon from "@/assets/chat.svg";
+import extraPhoto from "@/assets/extra-photo.jpg";
 import { Lock } from "lucide-react";
 
 import { loadSiteConfigFromDB, loadSiteConfig, defaultSiteConfig, SiteConfig } from "@/config/siteConfig";
@@ -373,6 +374,14 @@ const Index = () => {
                 controls
                 playsInline
                 muted
+              />
+            </figure>
+            <figure className="card-elevated overflow-hidden rounded-3xl">
+              <img
+                src={extraPhoto}
+                alt="Foto adicional"
+                className="h-full w-full object-cover"
+                loading="lazy"
               />
             </figure>
           </div>
