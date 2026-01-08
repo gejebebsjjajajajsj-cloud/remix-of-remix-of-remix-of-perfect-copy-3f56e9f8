@@ -125,6 +125,19 @@ serve(async (req) => {
     const amountInReais = amountInCents / 100;
 
     const webhookUrl = getWebhookUrl();
+    console.log("Webhook URL:", webhookUrl);
+
+    // Monta o payload
+    const pixPayload = {
+      amount: amountInReais,
+      client_name: name,
+      client_email: email,
+      client_document: cleanCpf,
+      webhook_url: webhookUrl,
+    };
+
+    console.log("PIX Payload:", JSON.stringify(pixPayload));
+    console.log("PIX URL:", `${ASYNC_BASE_URL}/api/partner/v1/cash-in`);
 
     // Cria o PIX na Async
     const asyncResponse = await fetch(`${ASYNC_BASE_URL}/api/partner/v1/cash-in`, {
@@ -134,23 +147,23 @@ serve(async (req) => {
         "Authorization": `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        amount: amountInReais,
-        description: type === "subscription" ? "Assinatura" : "Pagamento",
-        webhook_url: webhookUrl,
-        client: {
-          name,
-          cpf: cleanCpf,
-          email,
-          phone: phone?.replace(/\D/g, "") || "",
-        },
-      }),
+      body: JSON.stringify(pixPayload),
     });
 
-    const data = await asyncResponse.json();
+    const responseText = await asyncResponse.text();
+    console.log("Resposta PIX status:", asyncResponse.status);
+    console.log("Resposta PIX raw:", responseText);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Erro ao parsear resposta:", e);
+      data = { raw: responseText };
+    }
 
     if (!asyncResponse.ok) {
-      console.error("Erro Async:", data);
+      console.error("Erro Async detalhado:", JSON.stringify(data));
       return new Response(
         JSON.stringify({
           error: "Não foi possível gerar o pagamento PIX. Tente novamente em alguns minutos.",
