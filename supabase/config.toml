@@ -1,11 +1,5 @@
 project_id = "viqkciphnwdsjovhpokm"
 
-[functions.tribopay-create-pix]
-verify_jwt = false
-
-[functions.tribopay-webhook]
-verify_jwt = false
-
 [functions.async-create-pix]
 verify_jwt = false
 
