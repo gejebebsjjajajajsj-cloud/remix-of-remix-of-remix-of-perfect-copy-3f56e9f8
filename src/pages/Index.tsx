@@ -327,7 +327,7 @@ const Index = () => {
                 >
                   <span>WhatsApp</span>
                   <span className="flex items-center gap-2 text-sm font-semibold">
-                    R$ 100
+                    {siteConfig.whatsappButtonPriceText}
                   </span>
                 </Button>
               </div>
