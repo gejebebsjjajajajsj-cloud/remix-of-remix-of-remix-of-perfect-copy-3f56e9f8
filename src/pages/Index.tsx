@@ -29,10 +29,7 @@ const Index = () => {
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
   const [currentOrderType, setCurrentOrderType] = useState<"subscription" | "whatsapp" | null>(null);
   
-  // CPF input state
-  const [showCpfModal, setShowCpfModal] = useState(false);
-  const [cpfInput, setCpfInput] = useState("");
-  const [pendingProduct, setPendingProduct] = useState<"mensalidade" | "whatsapp" | null>(null);
+  // Removed CPF modal - using direct payment now
   const [siteConfig, setSiteConfig] = useState<SiteConfig>(defaultSiteConfig);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -124,23 +121,9 @@ const Index = () => {
     supabase.from("analytics_events").insert({ event_type: eventType });
   };
 
-  const handleOpenCpfModal = (product: "mensalidade" | "whatsapp") => {
-    setPendingProduct(product);
-    setCpfInput("");
-    setShowCpfModal(true);
-  };
-
-  const handleCpfSubmit = async () => {
-    if (!pendingProduct) return;
-    
-    const cleanCpf = cpfInput.replace(/\D/g, "");
-    if (cleanCpf.length !== 11) {
-      alert("CPF deve conter 11 números.");
-      return;
-    }
-    
-    setShowCpfModal(false);
-    await handlePixCheckout(pendingProduct, cleanCpf);
+  const handleDirectPayment = async (product: "mensalidade" | "whatsapp") => {
+    // CPF genérico para pagamento direto
+    await handlePixCheckout(product, "00000000000");
   };
 
   const handlePixCheckout = async (product: "mensalidade" | "whatsapp", cpf: string) => {
@@ -327,7 +310,7 @@ const Index = () => {
                     variant="cta"
                     className="flex w-full items-center justify-between rounded-2xl px-5 py-4 text-base font-semibold shadow-lg shadow-primary/40 md:text-lg"
                     style={siteConfig.primaryButtonBgColor ? { backgroundColor: siteConfig.primaryButtonBgColor } : undefined}
-                    onClick={() => handleOpenCpfModal("mensalidade")}
+                    onClick={() => handleDirectPayment("mensalidade")}
                   >
                     <span>{plan.label}</span>
                     <span className="flex items-center gap-2 text-sm font-semibold">{plan.price}</span>
@@ -339,7 +322,7 @@ const Index = () => {
                   className="flex w-full items-center justify-between rounded-2xl px-5 py-4 text-base font-semibold shadow-lg shadow-emerald-500/40 md:text-lg"
                   onClick={() => {
                     trackEvent("click_whatsapp");
-                    handleOpenCpfModal("whatsapp");
+                    handleDirectPayment("whatsapp");
                   }}
                 >
                   <span>WhatsApp</span>
@@ -388,41 +371,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Modal para pedir CPF */}
-      <Dialog open={showCpfModal} onOpenChange={setShowCpfModal}>
-        <DialogContent className="max-w-sm animate-enter rounded-3xl border border-border bg-background/95 px-6 py-5 shadow-xl shadow-primary/30">
-          <DialogHeader className="space-y-2 text-center">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-primary">
-              pagamento seguro
-            </p>
-            <DialogTitle className="text-lg font-semibold tracking-tight">
-              Informe seu CPF
-            </DialogTitle>
-            <p className="text-xs text-muted-foreground">
-              Digite seu CPF para gerar o pagamento PIX.
-            </p>
-          </DialogHeader>
-
-          <div className="mt-4 space-y-4">
-            <input
-              type="text"
-              inputMode="numeric"
-              placeholder="000.000.000-00"
-              value={cpfInput}
-              onChange={(e) => setCpfInput(e.target.value.replace(/\D/g, "").slice(0, 11))}
-              className="w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-lg tracking-wider focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <Button
-              variant="cta"
-              className="w-full rounded-2xl py-3 text-base font-semibold shadow-lg shadow-primary/40"
-              onClick={handleCpfSubmit}
-              disabled={cpfInput.replace(/\D/g, "").length !== 11}
-            >
-              Gerar PIX
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={pixModalOpen} onOpenChange={setPixModalOpen}>
         <DialogContent className="max-w-sm animate-enter rounded-3xl border border-border bg-background/95 px-6 py-5 shadow-xl shadow-primary/30">
